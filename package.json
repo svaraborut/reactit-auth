@@ -1,0 +1,50 @@
+{
+  "name": "@reactit/auth",
+  "description": "The ultimate token basted authentication solution for React",
+  "author": "Borut Svara <borut@svara.io>",
+  "license": "ISC",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0  || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0  || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/jest": "^29.2.0",
+    "@types/react": "16.14.32",
+    "jest-environment-jsdom": "^29.2.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svaraborut/reactit-auth.git"
+  },
+  "keywords": [
+    "React",
+    "Auth",
+    "Authentication",
+    "Security",
+    "Token",
+    "Jwt"
+  ],
+  "bugs": {
+    "url": "https://github.com/svaraborut/reactit-auth/issues"
+  },
+  "homepage": "https://github.com/svaraborut/reactit-auth#readme",
+  "dependencies": {
+    "@reactit/hooks": "^0.1.5"
+  }
+}

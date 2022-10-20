@@ -1,0 +1,13 @@
+# Publish a clean package
+
+.github
+.idea
+
+docs
+node_modules
+src
+test
+
+jest.config.ts
+package-lock.json
+tsconfig.json
