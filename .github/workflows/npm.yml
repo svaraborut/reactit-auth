@@ -1,10 +1,10 @@
-name: Build and publish to npmjs
+name: Build and publish
 on:
   release:
     types: [created]
   push:
-    branches:
-      - main
+#    branches:
+#      - main
     tags:
       - v**
 #    paths:
