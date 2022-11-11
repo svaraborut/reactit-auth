@@ -129,8 +129,7 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
     }
 
     function processResult(res: AuthActionResult<U>) {
-        const newCtx: AuthState<U> = {
-            // todo : state here may be old
+        setState(_state => ({
             auth: {
                 token: res.token,
                 expiresAt: coerceExpiration(res.tokenExpiration)
@@ -138,10 +137,9 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
             renew: res.renew ? {
                 token: res.renew,
                 expiresAt: coerceExpiration(res.renewExpiration)
-            } : state.renew,
-            user: res.user ? res.user : state.user
-        }
-        setState(newCtx)
+            } : _state.renew,
+            user: res.user ? res.user : _state.user
+        }))
     }
 
     /**
