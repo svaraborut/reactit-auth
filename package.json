@@ -3,12 +3,15 @@
   "description": "The ultimate token basted authentication solution for React",
   "author": "Borut Svara <borut@svara.io>",
   "license": "ISC",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest"
+  },
+  "dependencies": {
+    "@reactit/hooks": "^0.1.6"
   },
   "peerDependencies": {
     "react": "^16.8.0  || ^17.0.0 || ^18.0.0",
@@ -38,13 +41,12 @@
     "Authentication",
     "Security",
     "Token",
-    "Jwt"
+    "Jwt",
+    "Jsonwebtoken",
+    "Cookie"
   ],
   "bugs": {
     "url": "https://github.com/svaraborut/reactit-auth/issues"
   },
-  "homepage": "https://github.com/svaraborut/reactit-auth#readme",
-  "dependencies": {
-    "@reactit/hooks": "^0.1.5"
-  }
+  "homepage": "https://github.com/svaraborut/reactit-auth#readme"
 }

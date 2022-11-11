@@ -1,10 +1,14 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useEffect, useMemo, useRef } from 'react';
 import { AuthActionResult, AuthContext, AuthState } from './types';
-import { useScheduledEffect } from '@reactit/hooks/dist/effect/useScheduledEffect';
-import { useLatest, usePromise, useSharedPromise } from '@reactit/hooks';
+import {
+    useAsyncEffect,
+    useLatest,
+    usePromise,
+    useScheduledEffect,
+    useSharedPromise,
+    useStorage
+} from '@reactit/hooks';
 import { coerceExpiration, isTokenBundleValid, Token } from './token';
-import { useStorage } from '@reactit/hooks/dist/storage/useStorage';
-import { useAsyncEffect } from '@reactit/hooks/dist/async/useAsyncEffect';
 import { _AuthContext } from './context';
 import { StorageTypes } from '@reactit/hooks/dist/storage/storage';
 
@@ -21,6 +25,7 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
     // When enabled the devToken will be injected by default, simulating an already
     // authenticated context to ease the development burden.
     devSignedIn?: boolean
+    devUser?: U
 
     // Behaviour
     doSignIn: (ctx: AuthState<U>, input: SI | undefined) => Promise<AuthActionResult<U>>
@@ -28,7 +33,7 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
     doSignOut?: (ctx: AuthState<U>, input: SO | undefined) => Promise<void>
 
     // Side - effects
-    onTokenChange?: (ctx: AuthState<U>, token: Token | undefined) => Promise<void>
+    onTokenChange?: (ctx: AuthState<U>, token: Token | undefined) => void
 
 }
 
@@ -36,6 +41,8 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
  * Authentication provider to wrap the entire application. This
  * component does contain all the behavioural logic for the entire
  * authentication workflow.
+ *
+ * todo : force renew on mount / do not save token to Storage
  */
 export function AuthProvider<U, SI = any, RF = void, SO = void>(
     {
@@ -43,6 +50,7 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
         authPrefix = 'auth_',
         devToken,
         devSignedIn,
+        devUser,
         doSignIn,
         doRenew,
         doSignOut,
@@ -101,10 +109,17 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
         setState({ ...state, renew: undefined })
     }, state.renew?.expiresAt)
 
-    // React on token change
-    useAsyncEffect(async () => {
+    // React on token change. On first mount if authenticated the token shall be
+    // available immediately, before any subcomponent is rendered, to prevent any
+    // initial request from failing.
+    const mounted = useRef(false)
+    if (onTokenChange && state.auth?.token && !mounted.current) {
+        mounted.current = true
+        onTokenChange(state, state.auth.token)
+    }
+    useEffect(() => {
         if (!onTokenChange) return;
-        await onTokenChange(state, state.auth?.token)
+        onTokenChange(state, state.auth?.token)
     }, [state.auth?.token])
 
     // --- Actions ---
@@ -133,12 +148,12 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
      * Just run the standard signIn procedure
      */
 
-    const lastDevToken = useLatest(devToken);
+    const lastDev = useLatest({ token: devToken, user: devUser });
 
     const signInAsync = useSharedPromise(async (input?: SI) => {
         // ! Inject dev token if needed
-        const res = lastDevToken.current
-            ? { token: lastDevToken.current, tokenExpiration: undefined }
+        const res = lastDev.current?.token
+            ? { ...lastDev.current,  tokenExpiration: undefined } as AuthActionResult<U>
             : await doSignIn(state, input)
         processResult(res)
         return res

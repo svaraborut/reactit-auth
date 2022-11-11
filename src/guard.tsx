@@ -13,5 +13,9 @@ export interface AuthGuardProps {
  */
 export function AuthGuard({ showAuth = true, showUnAuth, children }: AuthGuardProps) {
     const auth = useIsAuthenticated();
-    return (auth && showAuth || !auth && showUnAuth) ? children : undefined
+    return (
+        <>
+            {(auth && showAuth || !auth && showUnAuth) ? children : undefined}
+        </>
+    )
 }
