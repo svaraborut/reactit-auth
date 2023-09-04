@@ -35,6 +35,8 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
     // Side - effects
     onTokenChange?: (ctx: AuthState<U>, token: Token | undefined) => void
 
+    renewOnMount?: boolean
+
 }
 
 /**
@@ -42,28 +44,31 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
  * component does contain all the behavioural logic for the entire
  * authentication workflow.
  *
- * todo : force renew on mount / do not save token to Storage
+ * todo : force renew on mount
  */
 export function AuthProvider<U, SI = any, RF = void, SO = void>(
     {
         authStorage = 'sessionStorage',
         authPrefix = 'auth_',
         devToken,
-        devSignedIn,
+        devSignedIn = false,
         devUser,
         doSignIn,
         doRenew,
         doSignOut,
         onTokenChange,
+        renewOnMount = false,
         children,
     }: AuthProviderProps<U, SI, RF, SO> & { children: ReactNode }
 ) {
 
     const [state, setState] = useStorage<AuthState<U>>(
-        devSignedIn && devToken ? { auth: { token: devToken } } : {},
+        devSignedIn && devToken ? { initialized: true, auth: { token: devToken } } : { initialized: false },
         (devToken ? '$dev_' : '') + authPrefix,
         authStorage,
     )
+
+    const isFirst = useRef(true)
 
     // Remove invalid tokens when they expire
     useAsyncEffect(async () => {
@@ -71,9 +76,10 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
         const authInv = state.auth && !isTokenBundleValid(state.auth)
         const renewInv = state.renew && !isTokenBundleValid(state.renew)
 
-        // Attempt to renew if auth is invalid but renew is present
-        // todo : this is opinionated (state.renew && !renewInv)
-        if ((!state.auth || authInv) && (state.renew && !renewInv)) {
+        // Attempt to renew if auth when invalid. Any opinion has been removed, doRenew is
+        // responsible for any validation, including absence or expiration of the renewal token
+        if ((isFirst.current && renewOnMount) || !state.auth || authInv) {
+            isFirst.current = false
             try {
                 await renewTokenAsync(undefined)
                 return
@@ -85,6 +91,7 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
         if (authInv || renewInv) {
             setState({
                 ...state,
+                initialized: true,
                 auth: authInv ? undefined : state.auth,
                 renew: renewInv ? undefined : state.renew,
             })
@@ -125,11 +132,12 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
     // --- Actions ---
 
     function processExit() {
-        setState({})
+        setState({ initialized: true })
     }
 
     function processResult(res: AuthActionResult<U>) {
         setState(_state => ({
+            initialized: true,
             auth: {
                 token: res.token,
                 expiresAt: coerceExpiration(res.tokenExpiration)
@@ -150,6 +158,9 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
 
     const signInAsync = useSharedPromise(async (input?: SI) => {
         // ! Inject dev token if needed
+        if (!lastDev.current?.token && !doSignIn) {
+            throw new Error(`AuthProvider has no sign-in function`)
+        }
         const res = lastDev.current?.token
             ? { ...lastDev.current,  tokenExpiration: undefined } as AuthActionResult<U>
             : await doSignIn(state, input)
@@ -164,8 +175,6 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
     const renewTokenAsync = useSharedPromise(async (input?: RF) => {
         if (!doRenew) {
             throw new Error(`AuthProvider has no renew function`)
-        } else if (!state?.renew) { // todo : this is opinionated
-            throw new Error(`Authentication context has no renew token`)
         }
         const res = await doRenew(state, input)
         processResult(res)

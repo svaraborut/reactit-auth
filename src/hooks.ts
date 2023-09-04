@@ -1,6 +1,7 @@
-import { EffectCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { AuthContext } from './types';
 import { useAuthContext } from './context';
+import { Token } from './token';
 
 /**
  * Provide access to all the authentication functionalities
@@ -40,10 +41,20 @@ export function useAuthUser<U>(): U | undefined {
 }
 
 /**
+ * Returns the latest authentication token if present
+ */
+export function useAuthToken(): Token | undefined {
+    const ctx = useAuthContext()
+    return ctx.auth?.token
+}
+
+/**
  * Effect called when the authentication state changes due to
  * any reason.
  */
-export function useAuthChangeEffect(effect: EffectCallback) {
-    const ctx = useAuthContext()
-    useEffect(effect, [ctx])
+export function useAuthChangeEffect<U, SI = any, RF = void, SO = void>(
+    effect: (context: AuthContext<U,  SI, RF, SO>) => (void | (() => void))
+) {
+    const ctx = useAuthContext<U, SI, RF, SO>()
+    useEffect(() => effect(ctx), [ctx])
 }

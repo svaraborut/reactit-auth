@@ -3,7 +3,7 @@
   "description": "The ultimate token basted authentication solution for React",
   "author": "Borut Svara <borut@svara.io>",
   "license": "ISC",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@reactit/hooks": "^0.1.6"
+    "@reactit/hooks": "^0.1.11"
   },
   "peerDependencies": {
     "react": "^16.8.0  || ^17.0.0 || ^18.0.0",

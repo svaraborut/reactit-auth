@@ -1,6 +1,9 @@
 import { Token, TokenBundle } from './token';
 
 export interface AuthState<U> {
+    // Determines weather the authentication has been initialized, this is
+    // useful to determine when the application is still performing the first load
+    initialized: boolean
     // The authentication token, if missing authentication is not present
     auth?: TokenBundle
     // The refresh token, if present refresh is supported
