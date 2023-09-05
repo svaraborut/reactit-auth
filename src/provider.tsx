@@ -28,7 +28,7 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
     devUser?: U
 
     // Behaviour
-    doSignIn: (ctx: AuthState<U>, input: SI | undefined) => Promise<AuthActionResult<U>>
+    doSignIn?: (ctx: AuthState<U>, input: SI | undefined) => Promise<AuthActionResult<U>>
     doRenew?: (ctx: AuthState<U>, input: RF | undefined) => Promise<AuthActionResult<U>>
     doSignOut?: (ctx: AuthState<U>, input: SO | undefined) => Promise<void>
 
@@ -43,8 +43,6 @@ export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
  * Authentication provider to wrap the entire application. This
  * component does contain all the behavioural logic for the entire
  * authentication workflow.
- *
- * todo : force renew on mount
  */
 export function AuthProvider<U, SI = any, RF = void, SO = void>(
     {
@@ -79,7 +77,6 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
         // Attempt to renew if auth when invalid. Any opinion has been removed, doRenew is
         // responsible for any validation, including absence or expiration of the renewal token
         if ((isFirst.current && renewOnMount) || !state.auth || authInv) {
-            isFirst.current = false
             try {
                 await renewTokenAsync(undefined)
                 return
@@ -88,7 +85,7 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
             }
         }
 
-        if (authInv || renewInv) {
+        if (isFirst.current || authInv || renewInv) {
             setState({
                 ...state,
                 initialized: true,
@@ -97,6 +94,7 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
             })
         }
 
+        isFirst.current = false
     }, [state])
 
     // Autonomous expiration of auth token
@@ -158,12 +156,14 @@ export function AuthProvider<U, SI = any, RF = void, SO = void>(
 
     const signInAsync = useSharedPromise(async (input?: SI) => {
         // ! Inject dev token if needed
-        if (!lastDev.current?.token && !doSignIn) {
+        let res: AuthActionResult<U>
+        if (lastDev.current?.token) {
+            res = { ...lastDev.current,  tokenExpiration: undefined } as AuthActionResult<U>
+        } else if (doSignIn) {
+            res = await doSignIn(state, input)
+        } else {
             throw new Error(`AuthProvider has no sign-in function`)
         }
-        const res = lastDev.current?.token
-            ? { ...lastDev.current,  tokenExpiration: undefined } as AuthActionResult<U>
-            : await doSignIn(state, input)
         processResult(res)
         return res
     })
