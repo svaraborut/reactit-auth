@@ -1,5 +1,5 @@
 
-export { useAuthContext } from './context'
+export * from './context'
 export * from './guard'
 export * from './hooks'
 export * from './provider'

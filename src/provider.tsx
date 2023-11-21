@@ -10,7 +10,7 @@ import {
 } from '@reactit/hooks';
 import { coerceExpiration, isTokenBundleValid, Token } from './token';
 import { _AuthContext } from './context';
-import { StorageTypes } from '@reactit/hooks/dist/storage/storage';
+import { StorageTypes } from '@reactit/hooks';
 
 export interface AuthProviderProps<U, SI = any, RF = void, SO = void> {
 

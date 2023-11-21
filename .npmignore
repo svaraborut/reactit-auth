@@ -10,4 +10,5 @@ test
 
 jest.config.ts
 package-lock.json
+rollup.config.mjs
 tsconfig.json
