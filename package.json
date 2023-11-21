@@ -6,7 +6,7 @@
     "Matte Scorcia"
   ],
   "license": "ISC",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
