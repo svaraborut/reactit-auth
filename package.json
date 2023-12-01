@@ -6,16 +6,15 @@
     "Matte Scorcia"
   ],
   "license": "ISC",
-  "version": "0.1.4",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "version": "0.1.5",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c",
     "test": "jest"
   },
   "dependencies": {
-    "@reactit/hooks": "^0.1.13"
+    "@reactit/hooks": "^0.1.14"
   },
   "peerDependencies": {
     "react": "^16.8.0  || ^17.0.0 || ^18.0.0",
